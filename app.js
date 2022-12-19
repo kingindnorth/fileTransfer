@@ -14,12 +14,23 @@ app.use(express.urlencoded({extended:true}))
 
 app.set("view engine", "ejs")
 
-const upload = multer({ dest:"upload" })
+//database configuration
+mongoose.connect(process.env.MONGO_URI)
+
+mongoose.connection.on("connected",()=>{
+    console.log("database connected");
+})
+mongoose.connection.on("disconnected",()=>{
+    console.log("databse disconnected")
+})
+
+const upload = multer({ dest:"uploads" })
 
 //routes
 app.get("/",(req,res)=>{
     res.render("index")
 })
+
 app.post("/upload",upload.single("file"),async(req,res)=>{
     const fileData = {
         path:req.file.path,
@@ -32,7 +43,9 @@ app.post("/upload",upload.single("file"),async(req,res)=>{
 
     const file = await File.create(fileData)
 
-    console.log(file)
+    res.render("index",{
+        fileLink:`${req.headers.origin}/file/${file._id}`
+    })
 
 })
 
