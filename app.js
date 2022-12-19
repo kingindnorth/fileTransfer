@@ -49,6 +49,32 @@ app.post("/upload",upload.single("file"),async(req,res)=>{
 
 })
 
+app.post("/file/:id",async(req,res)=>{
+    const file = await File.findById(req.params.id)
+    if(file.password !== null){
+        if(req.body.password === null) return res.render("password")
+        if(! await bcrypt.compare(req.body.password,file.password)) return res.render("password",{msg:"invalid password"})
+    }
+
+    file.downloadCount++
+    await file.save()
+    res.download(file.path,file.originalName)
+
+})
+
+app.get("/file/:id",async(req,res)=>{
+    const file = await File.findById(req.params.id)
+    // if(file.password !== null){
+    //     if(req.body.password === null) return res.render("password")
+    //     if(!(await bcrypt.compare(req.body.password,file.password))) return res.render("password",{msg:"invalid password"})
+    // }
+
+    file.downloadCount++
+    await file.save()
+    res.download(file.path,file.originalName)
+
+})
+
 const PORT = process.env.PORT || 9090
 
 app.listen(PORT,()=>{
